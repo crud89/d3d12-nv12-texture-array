@@ -31,6 +31,8 @@ constexpr auto IMAGE_COUNT = 2u;
 constexpr auto OUTPUT_WIDTH = 800u;
 constexpr auto OUTPUT_HEIGHT = 600u;
 
+#define USE_WARP 0;
+
 void waitFor(ID3D12Fence* fence, UINT64 fenceValue)
 {
 	if (fence->GetCompletedValue() < fenceValue)
@@ -85,7 +87,12 @@ int main(int argc, char* argv[])
     ::CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&factory));
 
     ComPtr<IDXGIAdapter> adapter;
+
+#ifdef USE_WARP
+	factory->EnumWarpAdapter(IID_PPV_ARGS(&adapter));
+#else
     factory->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&adapter));
+#endif
     DXGI_ADAPTER_DESC adapterDesc;
     adapter->GetDesc(&adapterDesc);
 
