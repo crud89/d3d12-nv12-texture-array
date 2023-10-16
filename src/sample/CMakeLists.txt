@@ -4,6 +4,7 @@ PROJECT(sample VERSION 1.0 LANGUAGES CXX)
 FIND_PACKAGE(directx-headers CONFIG REQUIRED)
 FIND_PACKAGE(directx-agility-sdk CONFIG REQUIRED)
 FIND_PACKAGE(d3d12-memory-allocator CONFIG REQUIRED)
+FIND_PACKAGE(winpixeventruntime CONFIG REQUIRED)
 
 # Attempt to find the proper dxcompiler.dll file from the Windows SDK and copy it to the runtime directory. This fixes an issue where the wrong (x64) dll
 # is picked up from the Vulkan SDK in x86 builds.
@@ -26,14 +27,21 @@ ADD_EXECUTABLE(${PROJECT_NAME}
 # Link project dependencies.
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}
     PUBLIC Microsoft::DirectX-Headers Microsoft::DirectX-Guids dxgi dxcompiler
-    PRIVATE unofficial::d3d12-memory-allocator Microsoft::DirectXAgilitySDK
+    PRIVATE unofficial::d3d12-memory-allocator Microsoft::DirectXAgilitySDK Microsoft::WinPixEventRuntime
 )
 
 # Copy shaders.
 ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/basic_vs.dxi" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/basic_fs.dxi" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-    COMMENT "Copying 'basic_vs.dxi' and 'basic_fs.dxi' to runtime directory..."
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/sample.hlsl" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+    COMMENT "Copying 'sample.hlsl' to runtime directory..."
+)
+
+ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/luma_0.nv12" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/luma_1.nv12" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/chroma_0.nv12" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/chroma_1.nv12" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+    COMMENT "Copying images to runtime directory..."
 )
 
 # Copy the DXC runtime to the project build dir.

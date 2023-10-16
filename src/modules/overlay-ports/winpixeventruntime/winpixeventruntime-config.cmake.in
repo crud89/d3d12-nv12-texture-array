@@ -1,0 +1,37 @@
+get_filename_component(_winpixeventruntime_root "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(_winpixeventruntime_root "${_winpixeventruntime_root}" PATH)
+get_filename_component(_winpixeventruntime_root "${_winpixeventruntime_root}" PATH)
+
+set(_winpixeventruntime_root_lib "${_winpixeventruntime_root}/lib/WinPixEventRuntime.lib")
+if (EXISTS "${_winpixeventruntime_root_lib}")
+
+   add_library(Microsoft::WinPixEventRuntime SHARED IMPORTED)
+   set_target_properties(Microsoft::WinPixEventRuntime PROPERTIES
+      IMPORTED_LOCATION                    "${_winpixeventruntime_root}/bin/WinPixEventRuntime.dll"
+      IMPORTED_IMPLIB                      "${_winpixeventruntime_root_lib}"
+      INTERFACE_INCLUDE_DIRECTORIES        "${_winpixeventruntime_root}/include"
+      IMPORTED_LINK_INTERFACE_LANGUAGES    "C")
+
+    # ... because for some reason the build system refuses to copy the DLLs over (probably since they are already available in 
+    # a system directory and it does not take into account, that they are different).
+    if (NOT TARGET winpixeventruntimebinaries)
+      add_custom_target(winpixeventruntimebinaries
+        COMMENT "Copy WinPixEventRuntime binaries to '${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/'..."
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${_winpixeventruntime_root}/bin/WinPixEventRuntime.dll" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/"
+      )
+
+      install(FILES "${_winpixeventruntime_root}/bin/WinPixEventRuntime.dll" DESTINATION "${CMAKE_INSTALL_BINARY_DIR}/")
+    endif()
+
+    add_dependencies(Microsoft::WinPixEventRuntime winpixeventruntimebinaries)
+
+    set(winpixeventruntime_FOUND TRUE)
+
+else()
+
+    set(winpixeventruntime_FOUND FALSE)
+
+endif()
+
+unset(_winpixeventruntime_root_lib)
+unset(_winpixeventruntime_root)
